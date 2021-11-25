@@ -4,29 +4,42 @@ declare(strict_types=1);
 
 namespace Codin\Thumper;
 
-use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Connection\AbstractConnection;
 
 class Consumer extends Amqp
 {
+    protected Config\Consumer $options;
+
+    public function __construct(AbstractConnection $connection, Config\Consumer $options)
+    {
+        parent::__construct($connection);
+        $this->options = $options;
+    }
+
+    public function withOptions(Config\Consumer $options): self
+    {
+        return new self($this->connection, $options);
+    }
+
     protected function getConsumerTag(): string
     {
         return 'PHPPROCESS_' . getmypid();
     }
 
-    public function consume(Config\Consumer $options, callable $callback): void
+    public function consume(callable $callback): void
     {
-        $this->prepare($options);
+        $this->prepare();
 
         $this->channel->basic_consume(
-            $options->getQueue()->getName(),
+            $this->options->getQueue()->getName(),
             $this->getConsumerTag(),
-            $options->noLocal(),
-            $options->noAck(),
-            $options->isExclusive(),
-            $options->noWait(),
+            $this->options->noLocal(),
+            $this->options->noAck(),
+            $this->options->isExclusive(),
+            $this->options->noWait(),
             $callback,
-            $options->getTicket(),
-            $options->getArguments()
+            $this->options->getTicket(),
+            $this->options->getArguments()
         );
 
         while (count($this->channel->callbacks)) {
@@ -34,19 +47,19 @@ class Consumer extends Amqp
         }
     }
 
-    protected function prepare(Config\Consumer $options): void
+    protected function prepare(): void
     {
-        $this->declareExchange($options->getExchange());
+        $this->declareExchange($this->options->getExchange());
 
-        $qos = $options->getQoS();
+        $qos = $this->options->getQoS();
 
         if ($qos instanceof Config\QoS) {
             $this->declareQoS($qos);
         }
 
-        $this->declareQueue($options->getQueue());
+        $this->declareQueue($this->options->getQueue());
 
-        $this->bindQueue($options->getQueue(), $options->getExchange());
+        $this->bindQueue($this->options->getQueue(), $this->options->getExchange());
     }
 
     public function cancel(): void

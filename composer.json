@@ -34,7 +34,7 @@
     },
     "scripts": {
         "psr": [
-            "./bin/php-cs-fixer fix src --allow-risky=yes --rules=@PSR2"
+            "./bin/php-cs-fixer fix src/ --allow-risky=yes --rules=@PSR2,no_unused_imports,ordered_imports,ordered_interfaces,single_quote,trailing_comma_in_multiline"
         ],
         "test": [
             "phpstan analyse",

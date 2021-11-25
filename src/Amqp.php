@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Codin\Thumper;
 
-use InvalidArgumentException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class Amqp
 {

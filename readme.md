@@ -16,9 +16,8 @@ $ composer require codin/thumper
 $connection = new PhpAmqpLib\Connection\AMQPLazyConnection('localhost', '5672', 'username', 'password');
 $exchange = new Codin\Thumper\Config\Exchange('my-exchange-name', PhpAmqpLib\Exchange\AMQPExchangeType::DIRECT);
 
-$producer = new Codin\Thumper\Producer($connection);
-
-$producer->publish('some message', $exchange);
+$producer = new Codin\Thumper\Producer($connection, $exchange);
+$producer->publish('some message');
 ```
 
 ```php
@@ -28,13 +27,13 @@ $exchange = new Codin\Thumper\Config\Exchange('my-exchange-name', PhpAmqpLib\Exc
 $queue = new Codin\Thumper\Config\Queue('my-queue-name');
 $options = new Codin\Thumper\Config\Consumer($exchange, $queue);
 
-$consumer = new Codin\Thumper\Consumer($connection);
+$consumer = new Codin\Thumper\Consumer($connection, $options);
 
 $callback = static function (PhpAmqpLib\Message\AMQPMessage $message): void {
     echo $message->getBody(); // some message
     $message->ack();
 };
-$consumer->consume($options, $callback);
+$consumer->consume($callback);
 ```
 
 ## Testing
