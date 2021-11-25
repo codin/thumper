@@ -19,36 +19,7 @@ abstract class Amqp
 
     protected AMQPChannel $channel;
 
-    protected array $exchangeOptions = [
-        'passive' => false,
-        'durable' => true,
-        'auto_delete' => false,
-        'internal' => false,
-        'nowait' => false,
-        'arguments' => null,
-        'ticket' => null,
-    ];
-
-    protected array $queueOptions = [
-        'name' => '',
-        'passive' => false,
-        'durable' => true,
-        'exclusive' => false,
-        'auto_delete' => false,
-        'nowait' => false,
-        'arguments' => null,
-        'ticket' => null,
-    ];
-
-    protected array $consumerOptions = [
-        'qos' => [],
-    ];
-
     protected string $routingKey = '';
-
-    protected array $parameters = [
-        'content_type' => 'text/plain',
-    ];
 
     public function __construct(AbstractConnection $connection)
     {
@@ -56,179 +27,51 @@ abstract class Amqp
         $this->channel = $this->connection->channel();
     }
 
-    public function setExchangeOptions(array $options): void
-    {
-        if (!isset($options['name']) || !$this->isValidExchangeName($options['name'])) {
-            throw new InvalidArgumentException(
-                'You must provide an exchange name'
-            );
-        }
-
-        if (empty($options['type'])) {
-            throw new InvalidArgumentException(
-                'You must provide an exchange type'
-            );
-        }
-
-        $this->exchangeOptions = array_merge(
-            $this->exchangeOptions,
-            $options
-        );
-    }
-
-    public function setQueueOptions(array $options): void
-    {
-        $this->queueOptions = array_merge(
-            $this->queueOptions,
-            $options
-        );
-    }
-
     public function setRoutingKey(string $routingKey): void
     {
         $this->routingKey = $routingKey;
     }
 
-    public function setQos(array $options): void
+    protected function declareExchange(Config\Exchange $options): void
     {
-        $this->consumerOptions['qos'] = array_merge($this->consumerOptions['qos'], $options);
-    }
-
-    protected function declareExchange($options): void
-    {
-        if (isset($this->exchangeOptions['name'])) {
-            $this->channel->exchange_declare(
-                $this->exchangeOptions['name'],
-                $this->exchangeOptions['type'],
-                $this->exchangeOptions['passive'],
-                $this->exchangeOptions['durable'],
-                $this->exchangeOptions['auto_delete'],
-                $this->exchangeOptions['internal'],
-                $this->exchangeOptions['nowait'],
-                $this->exchangeOptions['arguments'],
-                $this->exchangeOptions['ticket']
-            );
-
-            if (is_array($this->consumerOptions['qos'])) {
-                $this->channel->basic_qos(
-                    $this->consumerOptions['qos']['prefetch_size'],
-                    $this->consumerOptions['qos']['prefetch_count'],
-                    $this->consumerOptions['qos']['global']
-                );
-            }
-        }
-
-        $queueDeclaration = $this->channel->queue_declare(
-            $this->queueOptions['name'],
-            $this->queueOptions['passive'],
-            $this->queueOptions['durable'],
-            $this->queueOptions['exclusive'],
-            $this->queueOptions['auto_delete'],
-            $this->queueOptions['nowait'],
-            $this->queueOptions['arguments'],
-            $this->queueOptions['ticket']
-        );
-
-        if (null === $queueDeclaration) {
-            throw new \RuntimeException('Failed to declare queue');
-        }
-
-        [$queueName] = $queueDeclaration;
-
-        if (isset($this->exchangeOptions['name'])) {
-            $this->channel
-                ->queue_bind($queueName, $this->exchangeOptions['name'], $this->routingKey);
-        }
-
-        $this->channel->basic_consume(
-            $queueName,
-            $this->getConsumerTag(),
-            false,
-            false,
-            false,
-            false,
-            function (AMQPMessage $message): void {
-                $this->processMessage($message);
-            }
+        $this->channel->exchange_declare(
+            $options->getName(),
+            $options->getType(),
+            $options->isPassive(),
+            $options->isDurable(),
+            $options->autoDelete(),
+            $options->isInternal(),
+            $options->noWait(),
+            $options->getArguments(),
+            $options->getTicket()
         );
     }
 
-    protected function setUpConsumer(): void
+    protected function declareQoS(Config\QoS $options): void
     {
-        if (isset($this->exchangeOptions['name'])) {
-            $this->channel->exchange_declare(
-                $this->exchangeOptions['name'],
-                $this->exchangeOptions['type'],
-                $this->exchangeOptions['passive'],
-                $this->exchangeOptions['durable'],
-                $this->exchangeOptions['auto_delete'],
-                $this->exchangeOptions['internal'],
-                $this->exchangeOptions['nowait'],
-                $this->exchangeOptions['arguments'],
-                $this->exchangeOptions['ticket']
-            );
-
-            if (is_array($this->consumerOptions['qos'])) {
-                $this->channel->basic_qos(
-                    $this->consumerOptions['qos']['prefetch_size'],
-                    $this->consumerOptions['qos']['prefetch_count'],
-                    $this->consumerOptions['qos']['global']
-                );
-            }
-        }
-
-        $queueDeclaration = $this->channel->queue_declare(
-            $this->queueOptions['name'],
-            $this->queueOptions['passive'],
-            $this->queueOptions['durable'],
-            $this->queueOptions['exclusive'],
-            $this->queueOptions['auto_delete'],
-            $this->queueOptions['nowait'],
-            $this->queueOptions['arguments'],
-            $this->queueOptions['ticket']
-        );
-
-        if (null === $queueDeclaration) {
-            throw new \RuntimeException('Failed to declare queue');
-        }
-
-        [$queueName] = $queueDeclaration;
-
-        if (isset($this->exchangeOptions['name'])) {
-            $this->channel
-                ->queue_bind($queueName, $this->exchangeOptions['name'], $this->routingKey);
-        }
-
-        $this->channel->basic_consume(
-            $queueName,
-            $this->getConsumerTag(),
-            false,
-            false,
-            false,
-            false,
-            function (AMQPMessage $message): void {
-                $this->processMessage($message);
-            }
+        $this->channel->basic_qos(
+            $options->getPrefetchSize(),
+            $options->getPrefetchCount(),
+            $options->isGlobal()
         );
     }
 
-    protected function getConsumerTag(): string
+    protected function declareQueue(Config\Queue $options): void
     {
-        return 'PHPPROCESS_' . getmypid();
+        $this->channel->queue_declare(
+            $options->getName(),
+            $options->isPassive(),
+            $options->isDurable(),
+            $options->isExclusive(),
+            $options->autoDelete(),
+            $options->noWait(),
+            $options->getArguments(),
+            $options->getTicket()
+        );
     }
 
-    private function isValidExchangeName(string $exchangeName): bool
+    protected function bindQueue(Config\Queue $queue, Config\Exchange $exchange): void
     {
-        return preg_match('/^[A-Za-z0-9_\-\.\;]*$/', $exchangeName);
-    }
-
-    public function setParameter(string $key, string $value): void
-    {
-        $this->parameters[$key] = $value;
-    }
-
-    public function getParameters(): array
-    {
-        return $this->parameters;
+        $this->channel->queue_bind($queue->getName(), $exchange->getName(), $this->routingKey);
     }
 }

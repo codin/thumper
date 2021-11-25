@@ -1,0 +1,6 @@
+vendor
+bin
+tmp
+*.log
+*.cache
+ray.php

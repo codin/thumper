@@ -13,7 +13,6 @@
             "role": "Developer"
         }
     ],
-
     "require": {
         "php": "^7.4|^8.0",
         "php-amqplib/php-amqplib": "^3"

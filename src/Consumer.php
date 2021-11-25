@@ -8,51 +8,49 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class Consumer extends Amqp
 {
-    /**
-     * Number of messages consumed.
-     */
-    public int $consumed = 0;
-
-    /**
-     * Target number of messages to consume.
-     */
-    private int $target;
-
-    /**
-     * @var callable
-     */
-    protected $callback;
-
-    public function setCallback(callable $callback): void
+    protected function getConsumerTag(): string
     {
-        $this->callback = $callback;
+        return 'PHPPROCESS_' . getmypid();
     }
 
-    public function consume(int $numOfMessages): void
+    public function consume(Config\Consumer $options, callable $callback): void
     {
-        $this->target = $numOfMessages;
+        $this->prepare($options);
 
-        $this->setUpConsumer();
+        $this->channel->basic_consume(
+            $options->getQueue()->getName(),
+            $this->getConsumerTag(),
+            $options->noLocal(),
+            $options->noAck(),
+            $options->isExclusive(),
+            $options->noWait(),
+            $callback,
+            $options->getTicket(),
+            $options->getArguments()
+        );
 
         while (count($this->channel->callbacks)) {
             $this->channel->wait();
         }
     }
 
-    public function processMessage(AMQPMessage $message): void
+    protected function prepare(Config\Consumer $options): void
     {
-        call_user_func($this->callback, $message->body);
-        $message->delivery_info['channel']
-            ->basic_ack($message->delivery_info['delivery_tag']);
-        $this->consumed++;
-        $this->maybeStopConsumer($message);
+        $this->declareExchange($options->getExchange());
+
+        $qos = $options->getQoS();
+
+        if ($qos instanceof Config\QoS) {
+            $this->declareQoS($qos);
+        }
+
+        $this->declareQueue($options->getQueue());
+
+        $this->bindQueue($options->getQueue(), $options->getExchange());
     }
 
-    protected function maybeStopConsumer(AMQPMessage $message): void
+    public function cancel(): void
     {
-        if ($this->consumed == $this->target) {
-            $message->delivery_info['channel']
-                ->basic_cancel($message->delivery_info['consumer_tag']);
-        }
+        $this->channel->basic_cancel($this->getConsumerTag());
     }
 }

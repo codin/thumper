@@ -10,32 +10,35 @@ class Producer extends Amqp
 {
     protected bool $exchangeReady = false;
 
-    public function publish(string $messageBody, string $routingKey = ''): void
+    protected array $parameters = [
+        'content_type' => 'text/plain',
+    ];
+
+    public function setParameter(string $key, string $value): void
+    {
+        $this->parameters[$key] = $value;
+    }
+
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+
+    public function publish(string $messageBody, Config\Exchange $exchange, string $routingKey = ''): void
     {
         if (!$this->exchangeReady) {
-            if (isset($this->exchangeOptions['name'])) {
-                //declare a durable non autodelete exchange
-                $this->channel->exchange_declare(
-                    $this->exchangeOptions['name'],
-                    $this->exchangeOptions['type'],
-                    false,
-                    true,
-                    false
-                );
-            }
+            $this->declareExchange($exchange);
             $this->exchangeReady = true;
         }
 
         $this->setParameter('delivery_mode', self::PERSISTENT);
 
-        $message = new AMQPMessage(
-            $messageBody,
-            $this->getParameters()
-        );
+        $message = new AMQPMessage($messageBody, $this->getParameters());
+
         $this->channel->basic_publish(
             $message,
-            $this->exchangeOptions['name'],
-            !empty($routingKey) ? $routingKey : $this->routingKey
+            $exchange->getName(),
+            strlen($routingKey) > 0 ? $routingKey : $this->routingKey
         );
     }
 }
