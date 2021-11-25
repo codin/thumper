@@ -1,0 +1,8 @@
+parameters:
+    level: max
+    bootstrapFiles:
+        - %currentWorkingDirectory%/vendor/autoload.php
+    paths:
+        - %currentWorkingDirectory%/src
+    tmpDir: tmp
+    checkMissingIterableValueType: false

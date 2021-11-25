@@ -1,0 +1,50 @@
+{
+    "name": "codin/thumper",
+    "description": "RabbitMQ abstraction for queues and workers",
+    "license": "Apache-2.0",
+    "type": "library",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Kieron",
+            "email": "hello@madebykieron.co.uk",
+            "homepage": "http://madebykieron.co.uk",
+            "role": "Developer"
+        }
+    ],
+
+    "require": {
+        "php": "^7.4|^8.0",
+        "php-amqplib/php-amqplib": "^3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "@stable",
+        "phpspec/phpspec": "@stable",
+        "phpstan/phpstan": "@stable"
+    },
+    "autoload": {
+        "psr-4": {
+            "Codin\\Thumper\\": "src/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "bin-dir": "bin"
+    },
+    "scripts": {
+        "psr": [
+            "./bin/php-cs-fixer fix src --allow-risky=yes --rules=@PSR2"
+        ],
+        "test": [
+            "phpstan analyse",
+            "phpspec run"
+        ],
+        "uninstall": [
+            "rm -rf ./bin",
+            "rm -rf ./vendor",
+            "rm ./composer.lock"
+        ]
+    }
+}
