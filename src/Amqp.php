@@ -6,6 +6,7 @@ namespace Codin\Thumper;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
+use PhpAmqpLib\Wire\AMQPTable;
 
 abstract class Amqp
 {
@@ -17,17 +18,10 @@ abstract class Amqp
 
     protected AMQPChannel $channel;
 
-    protected string $routingKey = '';
-
     public function __construct(AbstractConnection $connection)
     {
         $this->connection = $connection;
         $this->channel = $this->connection->channel();
-    }
-
-    public function setRoutingKey(string $routingKey): void
-    {
-        $this->routingKey = $routingKey;
     }
 
     public function declareExchange(Config\Exchange $options): void
@@ -40,7 +34,7 @@ abstract class Amqp
             $options->autoDelete(),
             $options->isInternal(),
             $options->noWait(),
-            $options->getArguments(),
+            new AMQPTable($options->getArguments()),
             $options->getTicket()
         );
     }
@@ -63,13 +57,13 @@ abstract class Amqp
             $options->isExclusive(),
             $options->autoDelete(),
             $options->noWait(),
-            $options->getArguments(),
+            new AMQPTable($options->getArguments()),
             $options->getTicket()
         );
     }
 
     public function bindQueue(Config\Queue $queue, Config\Exchange $exchange): void
     {
-        $this->channel->queue_bind($queue->getName(), $exchange->getName(), $this->routingKey);
+        $this->channel->queue_bind($queue->getName(), $exchange->getName(), $routingKey);
     }
 }

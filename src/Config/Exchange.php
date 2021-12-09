@@ -9,6 +9,8 @@ use PhpAmqpLib\Exchange\AMQPExchangeType;
 
 class Exchange
 {
+    use Traits\Arguments;
+
     protected string $name;
 
     protected string $type;
@@ -22,8 +24,6 @@ class Exchange
     protected bool $internal;
 
     protected bool $nowait;
-
-    protected array $arguments;
 
     protected ?int $ticket;
 
@@ -104,11 +104,6 @@ class Exchange
     public function noWait(): bool
     {
         return $this->nowait;
-    }
-
-    public function getArguments(): array
-    {
-        return $this->arguments;
     }
 
     public function getTicket(): ?int

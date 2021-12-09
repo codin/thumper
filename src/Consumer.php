@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Codin\Thumper;
 
 use PhpAmqpLib\Connection\AbstractConnection;
+use PhpAmqpLib\Wire\AMQPTable;
 
 class Consumer extends Amqp
 {
@@ -39,7 +40,7 @@ class Consumer extends Amqp
             $this->options->noWait(),
             $callback,
             $this->options->getTicket(),
-            $this->options->getArguments()
+            new AMQPTable($this->options->getArguments())
         );
 
         while (count($this->channel->callbacks)) {

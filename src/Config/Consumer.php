@@ -6,6 +6,8 @@ namespace Codin\Thumper\Config;
 
 class Consumer
 {
+    use Traits\Arguments;
+
     protected Exchange $exchange;
 
     protected Queue $queue;
@@ -19,8 +21,6 @@ class Consumer
     protected bool $exclusive;
 
     protected bool $nowait;
-
-    protected array $arguments;
 
     protected ?int $ticket;
 
@@ -79,11 +79,6 @@ class Consumer
     public function noWait(): bool
     {
         return $this->nowait;
-    }
-
-    public function getArguments(): array
-    {
-        return $this->arguments;
     }
 
     public function getTicket(): ?int

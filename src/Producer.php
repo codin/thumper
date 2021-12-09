@@ -15,6 +15,7 @@ class Producer extends Amqp
 
     protected array $parameters = [
         'content_type' => 'text/plain',
+        'delivery_mode' => self::PERSISTENT,
     ];
 
     public function __construct(AbstractConnection $connection, Config\Exchange $exchange)
@@ -45,14 +46,12 @@ class Producer extends Amqp
             $this->exchangeReady = true;
         }
 
-        $this->setParameter('delivery_mode', self::PERSISTENT);
-
         $message = new AMQPMessage($messageBody, $this->getParameters());
 
         $this->channel->basic_publish(
             $message,
             $this->exchange->getName(),
-            strlen($routingKey) > 0 ? $routingKey : $this->routingKey
+            $routingKey
         );
     }
 }

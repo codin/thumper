@@ -6,6 +6,8 @@ namespace Codin\Thumper\Config;
 
 class Queue
 {
+    use Traits\Arguments;
+
     protected string $name;
 
     protected bool $passive;
@@ -17,8 +19,6 @@ class Queue
     protected bool $autoDelete;
 
     protected bool $nowait;
-
-    protected array $arguments;
 
     protected ?int $ticket;
 
@@ -70,11 +70,6 @@ class Queue
     public function noWait(): bool
     {
         return $this->nowait;
-    }
-
-    public function getArguments(): array
-    {
-        return $this->arguments;
     }
 
     public function getTicket(): ?int
