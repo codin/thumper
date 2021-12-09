@@ -62,7 +62,7 @@ abstract class Amqp
         );
     }
 
-    public function bindQueue(Config\Queue $queue, Config\Exchange $exchange): void
+    public function bindQueue(Config\Queue $queue, Config\Exchange $exchange, string $routingKey = ''): void
     {
         $this->channel->queue_bind($queue->getName(), $exchange->getName(), $routingKey);
     }
