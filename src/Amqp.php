@@ -30,7 +30,7 @@ abstract class Amqp
         $this->routingKey = $routingKey;
     }
 
-    protected function declareExchange(Config\Exchange $options): void
+    public function declareExchange(Config\Exchange $options): void
     {
         $this->channel->exchange_declare(
             $options->getName(),
@@ -45,7 +45,7 @@ abstract class Amqp
         );
     }
 
-    protected function declareQoS(Config\QoS $options): void
+    public function declareQoS(Config\QoS $options): void
     {
         $this->channel->basic_qos(
             $options->getPrefetchSize(),
@@ -54,7 +54,7 @@ abstract class Amqp
         );
     }
 
-    protected function declareQueue(Config\Queue $options): void
+    public function declareQueue(Config\Queue $options): void
     {
         $this->channel->queue_declare(
             $options->getName(),
@@ -68,7 +68,7 @@ abstract class Amqp
         );
     }
 
-    protected function bindQueue(Config\Queue $queue, Config\Exchange $exchange): void
+    public function bindQueue(Config\Queue $queue, Config\Exchange $exchange): void
     {
         $this->channel->queue_bind($queue->getName(), $exchange->getName(), $this->routingKey);
     }
