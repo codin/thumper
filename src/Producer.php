@@ -48,7 +48,7 @@ class Producer extends Amqp
 
         $message = new AMQPMessage($messageBody, $this->getParameters());
 
-        $this->channel->basic_publish(
+        $this->getChannel()->basic_publish(
             $message,
             $this->exchange->getName(),
             $routingKey

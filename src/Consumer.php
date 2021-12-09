@@ -31,7 +31,7 @@ class Consumer extends Amqp
     {
         $this->prepare();
 
-        $this->channel->basic_consume(
+        $this->getChannel()->basic_consume(
             $this->options->getQueue()->getName(),
             $this->getConsumerTag(),
             $this->options->noLocal(),
@@ -43,8 +43,8 @@ class Consumer extends Amqp
             new AMQPTable($this->options->getArguments())
         );
 
-        while (count($this->channel->callbacks)) {
-            $this->channel->wait();
+        while (count($this->getChannel()->callbacks)) {
+            $this->getChannel()->wait();
         }
     }
 
@@ -65,6 +65,6 @@ class Consumer extends Amqp
 
     public function cancel(): void
     {
-        $this->channel->basic_cancel($this->getConsumerTag());
+        $this->getChannel()->basic_cancel($this->getConsumerTag());
     }
 }

@@ -16,17 +16,24 @@ abstract class Amqp
 
     protected AbstractConnection $connection;
 
-    protected AMQPChannel $channel;
+    protected ?AMQPChannel $channel = null;
 
     public function __construct(AbstractConnection $connection)
     {
         $this->connection = $connection;
-        $this->channel = $this->connection->channel();
+    }
+
+    protected function getChannel(): AMQPChannel
+    {
+        if ($this->channel instanceof AMQPChannel) {
+            return $this->channel;
+        }
+        return $this->channel = $this->connection->channel();
     }
 
     public function declareExchange(Config\Exchange $options): void
     {
-        $this->channel->exchange_declare(
+        $this->getChannel()->exchange_declare(
             $options->getName(),
             $options->getType(),
             $options->isPassive(),
@@ -41,7 +48,7 @@ abstract class Amqp
 
     public function declareQoS(Config\QoS $options): void
     {
-        $this->channel->basic_qos(
+        $this->getChannel()->basic_qos(
             $options->getPrefetchSize(),
             $options->getPrefetchCount(),
             $options->isGlobal()
@@ -50,7 +57,7 @@ abstract class Amqp
 
     public function declareQueue(Config\Queue $options): void
     {
-        $this->channel->queue_declare(
+        $this->getChannel()->queue_declare(
             $options->getName(),
             $options->isPassive(),
             $options->isDurable(),
@@ -64,6 +71,6 @@ abstract class Amqp
 
     public function bindQueue(Config\Queue $queue, Config\Exchange $exchange, string $routingKey = ''): void
     {
-        $this->channel->queue_bind($queue->getName(), $exchange->getName(), $routingKey);
+        $this->getChannel()->queue_bind($queue->getName(), $exchange->getName(), $routingKey);
     }
 }
