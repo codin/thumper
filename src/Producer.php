@@ -29,6 +29,11 @@ class Producer extends Amqp
         return new self($this->connection, $exchange);
     }
 
+    public function getExchange(): Config\Exchange
+    {
+        return $this->exchange;
+    }
+
     public function setParameter(string $key, string $value): void
     {
         $this->parameters[$key] = $value;
