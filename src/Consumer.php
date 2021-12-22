@@ -22,6 +22,11 @@ class Consumer extends Amqp
         return new self($this->connection, $options);
     }
 
+    public function getOptions(): Config\Consumer
+    {
+        return $this->options;
+    }
+
     protected function getConsumerTag(): string
     {
         return 'PHPPROCESS_' . getmypid();
@@ -58,9 +63,11 @@ class Consumer extends Amqp
             $this->declareQoS($qos);
         }
 
-        $this->declareQueue($this->options->getQueue());
+        $queue = $this->options->getQueue();
 
-        $this->bindQueue($this->options->getQueue(), $this->options->getExchange());
+        $this->declareQueue($queue);
+
+        $this->bindQueue($queue, $this->options->getExchange(), $queue->getRoutingKey());
     }
 
     public function cancel(): void

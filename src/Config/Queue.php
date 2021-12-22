@@ -10,6 +10,8 @@ class Queue
 
     protected string $name;
 
+    protected string $routingKey;
+
     protected bool $passive;
 
     protected bool $durable;
@@ -24,6 +26,7 @@ class Queue
 
     public function __construct(
         string $name,
+        string $routingKey = '',
         bool $passive = false,
         bool $durable = true,
         bool $exclusive = false,
@@ -33,6 +36,7 @@ class Queue
         ?int $ticket = null
     ) {
         $this->name = $name;
+        $this->routingKey = $routingKey;
         $this->passive = $passive;
         $this->durable = $durable;
         $this->exclusive = $exclusive;
@@ -45,6 +49,11 @@ class Queue
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getRoutingKey(): string
+    {
+        return $this->routingKey;
     }
 
     public function isPassive(): bool

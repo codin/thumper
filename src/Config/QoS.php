@@ -13,7 +13,7 @@ class QoS
     protected bool $global;
 
     public function __construct(
-        int $prefetchSize = 1,
+        int $prefetchSize = 0,
         int $prefetchCount = 1,
         bool $global = false
     ) {
