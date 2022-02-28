@@ -10,10 +10,6 @@ use PhpAmqpLib\Wire\AMQPTable;
 
 abstract class Amqp
 {
-    public const NON_PERSISTENT = '1';
-
-    public const PERSISTENT = '2';
-
     protected AbstractConnection $connection;
 
     protected ?AMQPChannel $channel = null;

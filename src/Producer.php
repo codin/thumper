@@ -15,7 +15,7 @@ class Producer extends Amqp
 
     protected array $parameters = [
         'content_type' => 'text/plain',
-        'delivery_mode' => self::PERSISTENT,
+        'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
     ];
 
     public function __construct(AbstractConnection $connection, Config\Exchange $exchange)

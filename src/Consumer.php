@@ -70,8 +70,8 @@ class Consumer extends Amqp
         $this->bindQueue($queue, $this->options->getExchange(), $queue->getRoutingKey());
     }
 
-    public function cancel(): void
+    public function cancel(bool $nowait = false): void
     {
-        $this->getChannel()->basic_cancel($this->getConsumerTag());
+        $this->getChannel()->basic_cancel($this->getConsumerTag(), $nowait);
     }
 }
