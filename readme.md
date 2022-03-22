@@ -1,5 +1,9 @@
 # Thumper
 
+![version](https://img.shields.io/github/v/tag/codin/thumper)
+![workflow](https://img.shields.io/github/workflow/status/codin/thumper/Composer)
+![license](https://img.shields.io/github/license/codin/thumper)
+
 RabbitMQ abstraction for queues and workers.
 
 ## Install
